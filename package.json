@@ -1,0 +1,11 @@
+{
+  "name": "life",
+  "version": "1.0.0",
+  "description": "auto generating file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Chococrok",
+  "license": "ISC"
+}
