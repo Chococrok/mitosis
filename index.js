@@ -1,13 +1,19 @@
-const promisify = require("util").promisify;
 const fs = require("fs");
 const path = require("path");
-
-const stat = promisify(fs.stat);
 
 let numCopy = 0;
 
 function replicate() {
     mitosis(__filename, path.join(__dirname, "copies", `index${++numCopy}.js`));
+}
+
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
+
+function insertMutation(buffer) {
+    buffer[random(0, buffer.length)] = random(32, 120);
+    return buffer;
 }
 
 function mitosis(readPath, writePath) {
@@ -17,7 +23,7 @@ function mitosis(readPath, writePath) {
         const readStream = fs.createReadStream(readPath);
         const writeStream = fs.createWriteStream(writePath, "utf8");
         readStream.on("data", data => {
-            console.log(data);
+            data = insertMutation(data);
             writeStream.write(data, "utf8");
         });
         readStream.on("end", () => {
