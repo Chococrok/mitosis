@@ -1,10 +1,11 @@
 const fs = require("fs");
 const path = require("path");
+const childProcess = require("child_process");
 
 let numCopy = 0;
 
 function replicate() {
-    mitosis(__filename, path.join(__dirname, "copies", `index${++numCopy}.js`));
+    mitosis(__filename, path.join(__dirname, "children", `index${++numCopy}.js`));
 }
 
 function random(min, max) {
@@ -30,15 +31,20 @@ function mitosis(readPath, writePath) {
             writeStream.end();
         })
         writeStream.on("finish", () => {
-            if (readPath !== __filename) {
-                console.log("deleting copy: " + readPath);
-                fs.unlink(readPath, () => {
-                    mitosis(path.join(__dirname, "copies", `index${numCopy}.js`), path.join(__dirname, "copies", `index${++numCopy}.js`));
-                });
-            } else {
-                mitosis(path.join(__dirname, "copies", `index${numCopy}.js`), path.join(__dirname, "copies", `index${++numCopy}.js`));
-            }
+            childProcess.exec(`node ${writePath}`, (error, stdout, stderr) => {
+                if (error || stderr) {
+                    console.error(`error, replicating again`);
+                    replicate();
+                    return;
+                }
+                console.log(`stdout: ${stdout}`);
+                console.log(`stderr: ${stderr}`);
+            });
         });
+        writeStream.on("error", error => {
+            fs.mkdir(path.join(__dirname, "children"));
+            mitosis(__filename, path.join(__dirname, `index${++numCopy}.js`));
+        })
     } catch (error) {
         console.log(error);
     }
